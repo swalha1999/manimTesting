@@ -14,6 +14,7 @@ from pathlib import Path
 from os import path
 import scene.manim_scene as manim_scene
 from view.preview_window import PreviewWindow
+from controllers.scene_controller import SceneController
 
 windows = set()
 
@@ -64,7 +65,8 @@ def main():
 
         scene = manim_scene.PreviewScene(renderer)
         renderer.scene = scene
-
+        scene_controller = SceneController(scene, renderer)
+        
         scene.render()
 
     sys.exit(app.exec())
