@@ -79,6 +79,9 @@ class IGroup(IMobject):
     def decl_str(self):
         return f"VGroup({self.children_str()})"
 
+    # def allowed_to_select(self):
+    #     return 
+
 
 class ICircle(IMobject):
     """

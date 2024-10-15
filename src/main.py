@@ -12,9 +12,14 @@ from PySide6.QtWidgets import (
 
 from pathlib import Path
 from os import path
-import scene.manim_scene as manim_scene
-from view.preview_window import PreviewWindow
+from controllers.fsm_controller import FsmController
 from controllers.scene_controller import SceneController
+import scene.manim_scene as manim_scene
+from view.details_bar import DetailsBar
+from view.objects_bar import ObjectsBar
+from view.state_bar import StateWidget
+from view.preview_window import PreviewWindow
+from view.code_preview_window import CodePreviewWindow
 
 windows = set()
 
@@ -65,8 +70,31 @@ def main():
 
         scene = manim_scene.PreviewScene(renderer)
         renderer.scene = scene
+
         scene_controller = SceneController(scene, renderer)
-        
+        fsm_controller = FsmController(scene_controller)
+        scene_controller.set_fsm_controller(fsm_controller)
+
+        objects_bar = ObjectsBar(fsm_controller, close_all)
+        objects_bar.show()
+
+        state_bar = StateWidget(scene_controller, fsm_controller, close_all)
+        state_bar.show()
+
+        details_bar = DetailsBar(scene_controller, fsm_controller, close_all)
+        # details_bar.show()
+
+        # Add the new CodePreviewWindow
+        code_preview = CodePreviewWindow(fsm_controller, close_all)
+        code_preview.show()
+
+        print(path.join(this_dir, "view", "styles.qss"))
+        with open(path.join(this_dir, "view", "styles.qss"), "r") as f:
+            _style = f.read()
+            for w in (objects_bar, details_bar, state_bar, code_preview):
+                windows.add(w)
+                w.setStyleSheet(_style)
+
         scene.render()
 
     sys.exit(app.exec())

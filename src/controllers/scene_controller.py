@@ -62,10 +62,7 @@ class SceneController(QObject):
         if not isinstance(imobject, IMarkupText) and not isinstance(imobject, IGroup):
             mobject.set_color("#8fbc8f")
 
-        if self.fsm_controller is not None:
-            self.fsm_controller.curr.capture_prev(mobject)
-        else:
-            print("FSM controller not set (you should set the fsm controller)")
+        self.fsm_controller.curr.capture_prev(mobject)
 
         # print(imobject)
         self.selectedMobjectChange.emit(imobject)
@@ -83,14 +80,10 @@ class SceneController(QObject):
 
         self.selectedMobjectChange.emit(INone())
 
-    
     """" Movement functions """
     # TODO: refactor non-scene related functions out
     def confirm_selected_shift(self, delta, altdown):
         for mcopy in self.selected:
-            if self.fsm_controller is None:
-                print("FSM controller not set (you should set the fsm controller)")
-                return
             self.fsm_controller.confirm_move(mcopy, delta, altdown)
 
     def created_at_curr_state_with_anim(self, mcopy):
@@ -98,10 +91,6 @@ class SceneController(QObject):
 
         if imobject is None:
             return True  # block any interaction with it
-
-        if self.fsm_controller is None:
-            print("FSM controller not set (you should set the fsm controller)")
-            return
 
         return self.fsm_controller.created_at_curr_state_with_anim(imobject)
 
