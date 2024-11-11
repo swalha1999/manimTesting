@@ -1,13 +1,13 @@
 import moderngl_window as mglw
-from moderngl_window.context.pyside2.window import Window as PySideWindow
+from moderngl_window.context.pyqt5.window import Window as PyQt5Window
 from moderngl_window.timers.clock import Timer
 
 
-class PreviewWindow(PySideWindow):
+class PreviewWindow(PyQt5Window):
     """
     Previews the Manim animations...
 
-    is a subclass of ModernGL's Pyside2 window
+    is a subclass of ModernGL's PyQt5 window
     """
 
     def __init__(self, app, renderer, close_handler) -> None:
@@ -15,7 +15,7 @@ class PreviewWindow(PySideWindow):
         self.close_handler = close_handler
         self.app = app
         self._widget.setGeometry(550, 250, 900, 520)
-        self.title = "Render Preview WIndwo"
+        self.title = "Render Preview Window"
 
         # self.size = size
         self.renderer = renderer
@@ -62,7 +62,7 @@ class PreviewWindow(PySideWindow):
         }
         self.renderer.scene.on_mouse_release(point, mouse_button_map[button], modifiers)
 
-    def close_event(self, event):
-        super().close_event(event)
+    def closeEvent(self, event):
+        super().closeEvent(event)
         self.close_handler()
         event.accept()

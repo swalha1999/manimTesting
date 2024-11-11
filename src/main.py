@@ -10,6 +10,10 @@ from PySide6.QtWidgets import (
     QApplication,
 )
 
+from PyQt5.QtGui import QSurfaceFormat as QSurfaceFormatPyQt5
+from PyQt5.QtWidgets import QApplication as QApplicationPyQt5, QMainWindow, QPushButton, QVBoxLayout, QWidget
+
+
 from pathlib import Path
 from os import path
 from controllers.fsm_controller import FsmController
@@ -22,12 +26,7 @@ from view.preview_window import PreviewWindow
 from view.code_preview_window import CodePreviewWindow
 
 windows = set()
-
-def close_all():
-    for window in windows:
-        window.close()
-
-    # sys.exit()
+pyQt5_windows = set()
 
 
 def main():
@@ -35,6 +34,7 @@ def main():
 
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     app = QApplication(sys.argv)
+    pyqt5_app = QApplicationPyQt5(sys.argv)
     this_dir, _ = path.split(__file__)
     with tempconfig(
         {
@@ -47,15 +47,15 @@ def main():
         }
     ):
 
-        format = QSurfaceFormat()
+        format = QSurfaceFormatPyQt5()
         format.setDepthBufferSize(24)
         format.setStencilBufferSize(8)
         format.setVersion(3, 2)
-        format.setProfile(QSurfaceFormat.CoreProfile)
-        QSurfaceFormat.setDefaultFormat(format)
+        format.setProfile(QSurfaceFormatPyQt5.CoreProfile)
+        QSurfaceFormatPyQt5.setDefaultFormat(format)
         renderer = OpenGLRenderer()
-        preview_window = PreviewWindow(app, renderer, close_all)
-        windows.add(preview_window._widget)
+        preview_window = PreviewWindow(pyqt5_app, renderer, close_all)
+        pyQt5_windows.add(preview_window._widget)
         renderer.window = preview_window
         renderer.frame_buffer_object = preview_window.ctx.detect_framebuffer()
         renderer.context = preview_window.ctx
@@ -97,9 +97,23 @@ def main():
 
         scene.render()
 
-    sys.exit(app.exec())
+    sys.exit(app.exec() and pyqt5_app.exec())
 
 
+
+def close_all_pyqt5():
+    for window in pyQt5_windows:
+        window.close()
+    sys.exit()
+
+
+
+def close_all():
+    for window in windows:
+        window.close()
+    for window in pyQt5_windows:
+        window.close()
+    sys.exit()
 
 if __name__ == "__main__":
     main()

@@ -150,9 +150,6 @@ class ObjectsBar(QTabWidget):
         tab = QWidget()
         self.objects_layout = QVBoxLayout()
 
-        addTree = StyledButton("add tree")
-        addTree.clicked.connect(self.add_tree)
-
         addCircle = StyledButton("add circle")
         addCircle.clicked.connect(
             lambda: self.fsm_controller.instant_add_object_to_curr(ICircle())
@@ -173,50 +170,16 @@ class ObjectsBar(QTabWidget):
             lambda: self.fsm_controller.instant_add_object_to_curr(ITriangle())
         )
 
-        addMarkupText = StyledButton("add text")
-        addMarkupText.clicked.connect(
-            lambda: self.fsm_controller.instant_add_object_to_curr(
-                IMarkupText(
-                    """click to add text""",
-                    fsm_controller=self.fsm_controller,
-                )
-            )
-        )
-
-        addMathTex = StyledButton("add latex")
-        addMathTex.clicked.connect(
-            lambda: self.fsm_controller.instant_add_object_to_curr(
-                IMathTex(r"\xrightarrow{x^6y^8}", fsm_controller=self.fsm_controller)
-            )
-        )
-
         self.simple_mobjects = QGroupBox("Simple Shapes")
-        self.complex_mobjects = QGroupBox("Complex Data Structures")
-        self.text_mobjects = QGroupBox("Text")
-        
+
         simple_layout = QVBoxLayout()
-        complex_layout = QVBoxLayout()
-        text_layout = QVBoxLayout()
 
         for w in (addCircle, addSquare, addTriangle, addStar):
             simple_layout.addWidget(w)
 
-        for w in (addTree, ):
-            complex_layout.addWidget(w)
-
-        for w in (addMarkupText, addMathTex):
-            text_layout.addWidget(w)
-
         self.simple_mobjects.setLayout(simple_layout)
-        self.complex_mobjects.setLayout(complex_layout)
-        self.text_mobjects.setLayout(text_layout)
 
-        for w, l in (
-            (self.simple_mobjects, 4),
-            (self.text_mobjects, 2),
-            (self.complex_mobjects, 1),
-        ):
-            self.objects_layout.addWidget(w, l)
+        self.objects_layout.addWidget(self.simple_mobjects)
 
         tab.setLayout(self.objects_layout)
         return tab
