@@ -21,11 +21,11 @@ class SceneController(QObject):
         self.renderer = renderer
         scene.handler = self
         self.selected = {}
-        self.fsm_controller = None  # to set
+        self.scene_state_controller = None
         self.ctrldown = False
 
-    def set_fsm_controller(self, fsm_controller):
-        self.fsm_controller = fsm_controller
+    def set_scene_state_controller(self, scene_state_controller):
+        self.scene_state_controller = scene_state_controller
 
     def add_copy(self, imobject):
         self.scene.add(mh.get_copy(imobject))
@@ -62,7 +62,7 @@ class SceneController(QObject):
         if not isinstance(imobject, IMarkupText) and not isinstance(imobject, IGroup):
             mobject.set_color("#8fbc8f")
 
-        self.fsm_controller.curr.capture_prev(mobject)
+        self.scene_state_controller.curr.capture_prev(mobject)
 
         # print(imobject)
         self.selectedMobjectChange.emit(imobject)
@@ -84,7 +84,7 @@ class SceneController(QObject):
     # TODO: refactor non-scene related functions out
     def confirm_selected_shift(self, delta, altdown):
         for mcopy in self.selected:
-            self.fsm_controller.confirm_move(mcopy, delta, altdown)
+            self.scene_state_controller.confirm_move(mcopy, delta, altdown)
 
     def created_at_curr_state_with_anim(self, mcopy):
         imobject = mh.get_original(mcopy)
@@ -92,7 +92,7 @@ class SceneController(QObject):
         if imobject is None:
             return True  # block any interaction with it
 
-        return self.fsm_controller.created_at_curr_state_with_anim(imobject)
+        return self.scene_state_controller.created_at_curr_state_with_anim(imobject)
 
     def move_selected_by(self, delta):
         if not self.selected:

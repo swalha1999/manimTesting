@@ -26,10 +26,10 @@ class ObjectsBar(QTabWidget):
     also can control admin related objects.
     """
 
-    def __init__(self, fsm_controller, close_handler):
+    def __init__(self, scene_state_controller, close_handler):
         super().__init__()
 
-        self.fsm_controller = fsm_controller
+        self.scene_state_controller = scene_state_controller
         self.close_handler = close_handler
 
         self.setWindowTitle(" ")
@@ -78,8 +78,7 @@ class ObjectsBar(QTabWidget):
         dialog.setNameFilters(['Python (*.py)'])
         if dialog.exec_() == QDialog.Accepted:
             filename = dialog.selectedFiles()[0]
-            # filename = dialog.getSaveFileName(self, 'Export File', '/home', 'Python Files (*.py)')[0]
-            self.fsm_controller.export(filename)
+            self.scene_state_controller.export(filename)
 
     def import_mobject_handler(self):
         file_name = QFileDialog.getOpenFileName(self, 'Open File', '/home', 'Python Files (*.py)')[0]
@@ -124,21 +123,21 @@ class ObjectsBar(QTabWidget):
 
             self.objects_layout.insertWidget(0, self.user_mobjects, self.user_layout.count())
 
-            self.fsm_controller.add_python_to_writer(file_name)
+            self.scene_state_controller.add_python_to_writer(file_name)
 
 
 
     def imobject_add(self, mobject_class):
-        return lambda: self.fsm_controller.instant_add_object_to_curr(IMobject(mobject_class(), user_defined=True))
+        return lambda: self.scene_state_controller.instant_add_object_to_curr(IMobject(mobject_class(), user_defined=True))
 
     def animation_tab(self):
         tab = QWidget()
         layout = QVBoxLayout()
 
         addFrame = QPushButton("New Frame (+)")
-        addFrame.clicked.connect(self.fsm_controller.add_state)
+        addFrame.clicked.connect(self.scene_state_controller.add_state)
         delFrame = QPushButton("Delete Current Frame (-)")
-        delFrame.clicked.connect(self.fsm_controller.del_state)
+        delFrame.clicked.connect(self.scene_state_controller.del_state)
 
         for w in (addFrame, delFrame):
             layout.addWidget(w)
@@ -152,22 +151,22 @@ class ObjectsBar(QTabWidget):
 
         addCircle = StyledButton("add circle")
         addCircle.clicked.connect(
-            lambda: self.fsm_controller.instant_add_object_to_curr(ICircle())
+            lambda: self.scene_state_controller.instant_add_object_to_curr(ICircle())
         )
 
         addSquare = StyledButton("add square")
         addSquare.clicked.connect(
-            lambda: self.fsm_controller.instant_add_object_to_curr(ISquare())
+            lambda: self.scene_state_controller.instant_add_object_to_curr(ISquare())
         )
 
         addStar = StyledButton("add star")
         addStar.clicked.connect(
-            lambda: self.fsm_controller.instant_add_object_to_curr(IStar())
+            lambda: self.scene_state_controller.instant_add_object_to_curr(IStar())
         )
 
         addTriangle = StyledButton("add triangle")
         addTriangle.clicked.connect(
-            lambda: self.fsm_controller.instant_add_object_to_curr(ITriangle())
+            lambda: self.scene_state_controller.instant_add_object_to_curr(ITriangle())
         )
 
         self.simple_mobjects = QGroupBox("Simple Shapes")
@@ -185,7 +184,7 @@ class ObjectsBar(QTabWidget):
         return tab
 
     def add_tree(self):
-        node = INode(self.fsm_controller)
+        node = INode(self.scene_state_controller)
         node.show_node()  # can also use instant_add
 
     def closeEvent(self, e):

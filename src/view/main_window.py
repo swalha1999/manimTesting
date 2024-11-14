@@ -11,7 +11,7 @@ from .code_preview_window import CodePreviewWindow
 from .preview_window import PreviewWindow
 
 class MainWindow(QMainWindow):
-    def __init__(self, scene_controller, fsm_controller, close_handler, pyqt5_app, renderer):
+    def __init__(self, scene_controller, scene_state_controller, close_handler, pyqt5_app, renderer):
         super().__init__()
         self.setWindowTitle("Manimate")
         self.setGeometry(100, 100, 1600, 900)
@@ -29,7 +29,7 @@ class MainWindow(QMainWindow):
         splitter = QSplitter(Qt.Horizontal)
         
         # Left panel - Objects Bar
-        self.objects_panel = ObjectsBar(fsm_controller, self.handle_child_close)
+        self.objects_panel = ObjectsBar(scene_state_controller, self.handle_child_close)
         self.objects_panel.setMaximumWidth(300)
         splitter.addWidget(self.objects_panel)
         self.widgets.append(self.objects_panel)
@@ -51,7 +51,7 @@ class MainWindow(QMainWindow):
         self.widgets.append(self.preview_window._widget)
         
         # Right panel - Code Preview
-        self.code_preview = CodePreviewWindow(fsm_controller, self.handle_child_close)
+        self.code_preview = CodePreviewWindow(scene_state_controller, self.handle_child_close)
         self.code_preview.setMaximumWidth(400)
         splitter.addWidget(self.code_preview)
         self.widgets.append(self.code_preview)
@@ -63,7 +63,7 @@ class MainWindow(QMainWindow):
         # Create bottom dock widget for state controls
         state_dock = QDockWidget("Timeline", self)
         state_dock.setFeatures(QDockWidget.DockWidgetFloatable | QDockWidget.DockWidgetMovable)
-        self.state_widget = StateWidget(scene_controller, fsm_controller, self.handle_child_close)
+        self.state_widget = StateWidget(scene_controller, scene_state_controller, self.handle_child_close)
         state_dock.setWidget(self.state_widget)
         self.addDockWidget(Qt.BottomDockWidgetArea, state_dock)
         self.widgets.append(self.state_widget)

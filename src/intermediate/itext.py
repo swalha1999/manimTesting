@@ -39,9 +39,9 @@ class IMathTex(IMobject):
     Intermediate MathTex mobject
     """
 
-    def __init__(self, text, parent_imobject=None, font_size=50, fsm_controller=None):
+    def __init__(self, text, parent_imobject=None, font_size=50, scene_state_controller=None):
         self.text = text
-        self.fsm_controller = fsm_controller
+        self.scene_state_controller = scene_state_controller
         self.font_size = font_size
         self.label = MathTex(r"{}".format(text), font_size=font_size)
         self.label.set_color("#FFFFFF")
@@ -49,7 +49,7 @@ class IMathTex(IMobject):
 
     def change_text(self, new_text_str):
         # update field
-        curr_state = self.fsm_controller.curr
+        curr_state = self.scene_state_controller.curr
         # create new text
         try:
             new_text = MathTex(r"{}".format(new_text_str), font_size=self.font_size)
@@ -58,15 +58,15 @@ class IMathTex(IMobject):
             new_text.move_to(mh.get_copy(self).get_center())
 
             # configure transforms
-            self.fsm_controller.curr.capture_prev(mh.get_copy(self))
+            self.scene_state_controller.curr.capture_prev(mh.get_copy(self))
             curr_state.targets[self] = new_text
 
-            if mh.get_copy(self) in self.fsm_controller.scene_controller.selected:
-                color = self.fsm_controller.scene_controller.selected[mh.get_copy(self)]
+            if mh.get_copy(self) in self.scene_state_controller.selected:
+                color = self.scene_state_controller.selected[mh.get_copy(self)]
                 curr_state.targets[self].set_color(color)
             # store for writer
             self.text = new_text_str
-            self.fsm_controller.edit_transform_target(
+            self.scene_state_controller.edit_transform_target(
                 self,
                 new_text.copy(),
                 color=color,
@@ -76,7 +76,7 @@ class IMathTex(IMobject):
 
             # setup current ui
             curr_state.play_copy(
-                ITransform(self), self.fsm_controller.scene_controller.scene
+                ITransform(self), self.scene_state_controller.scene
             )
         except Exception as e:
             print(e)
@@ -98,9 +98,9 @@ class IMarkupText(IMobject):
     Intermediate MarkupText mobject
     """
 
-    def __init__(self, text, parent_imobject=None, font_size=14, fsm_controller=None):
+    def __init__(self, text, parent_imobject=None, font_size=14, scene_state_controller=None):
         self.text = text
-        self.fsm_controller = fsm_controller
+        self.scene_state_controller = scene_state_controller
         self.font_size = font_size
         self.bold_areas = []
         self.highlight = Highlight.BOLD
@@ -115,11 +115,11 @@ class IMarkupText(IMobject):
         self.highlight = highlight
         new_bold_areas = [(cs, ce)]
 
-        if "bold_areas" not in self.fsm_controller.curr.rev_attributes[self]:
-            self.fsm_controller.curr.rev_attributes[self][
+        if "bold_areas" not in self.scene_state_controller.curr.rev_attributes[self]:
+            self.scene_state_controller.curr.rev_attributes[self][
                 "bold_areas"
             ] = self.bold_areas
-        self.fsm_controller.curr.changed_mobject_attributes[self][
+        self.scene_state_controller.curr.changed_mobject_attributes[self][
             "bold_areas"
         ] = new_bold_areas
 
@@ -129,11 +129,11 @@ class IMarkupText(IMobject):
         self.update_markup_text(self.format_text(self.text))
 
     def clear_bold(self):
-        if "bold_areas" not in self.fsm_controller.curr.rev_attributes[self]:
-            self.fsm_controller.curr.rev_attributes[self][
+        if "bold_areas" not in self.scene_state_controller.curr.rev_attributes[self]:
+            self.scene_state_controller.curr.rev_attributes[self][
                 "bold_areas"
             ] = self.bold_areas
-        self.fsm_controller.curr.changed_mobject_attributes[self]["bold_areas"] = []
+        self.scene_state_controller.curr.changed_mobject_attributes[self]["bold_areas"] = []
 
         self.bold_areas = []
         self.update_markup_text(self.format_text(self.text))
@@ -174,9 +174,9 @@ class IMarkupText(IMobject):
 
     def change_text(self, new_text_str):
         # update field
-        if "text" not in self.fsm_controller.curr.rev_attributes[self]:
-            self.fsm_controller.curr.rev_attributes[self]["text"] = self.text
-        self.fsm_controller.curr.changed_mobject_attributes[self]["text"] = new_text_str
+        if "text" not in self.scene_state_controller.curr.rev_attributes[self]:
+            self.scene_state_controller.curr.rev_attributes[self]["text"] = self.text
+        self.scene_state_controller.curr.changed_mobject_attributes[self]["text"] = new_text_str
 
         self.text = new_text_str
 
@@ -184,7 +184,7 @@ class IMarkupText(IMobject):
         return None
 
     def update_markup_text(self, markup_text):
-        curr_state = self.fsm_controller.curr
+        curr_state = self.scene_state_controller.curr
 
         # create new text
         new_text = MarkupText(markup_text, font_size=self.font_size, font="Consolas")
@@ -193,11 +193,11 @@ class IMarkupText(IMobject):
         new_text.move_to(mh.get_copy(self).get_center())
 
         # configure transforms
-        self.fsm_controller.curr.capture_prev(mh.get_copy(self))
+        self.scene_state_controller.curr.capture_prev(mh.get_copy(self))
         curr_state.targets[self] = new_text
 
         # store for writer
-        self.fsm_controller.edit_transform_target(
+        self.scene_state_controller.edit_transform_target(
             self,
             new_text,
             move_to=mh.get_copy(self).get_center().tolist(),
@@ -207,7 +207,7 @@ class IMarkupText(IMobject):
 
         # setup current ui
         curr_state.play_copy(
-            ITransform(self), self.fsm_controller.scene_controller.scene
+            ITransform(self), self.scene_state_controller.scene
         )
 
     def decl_str(self):

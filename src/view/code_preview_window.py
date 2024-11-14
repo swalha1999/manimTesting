@@ -2,10 +2,10 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit
 from PySide6.QtGui import QFont
 
 class CodePreviewWindow(QWidget):
-    def __init__(self, fsm_controller, close_handler):
+    def __init__(self, scene_state_controller, close_handler):
         super().__init__()
 
-        self.fsm_controller = fsm_controller
+        self.scene_state_controller = scene_state_controller
         self.close_handler = close_handler
 
         self.setWindowTitle("Generated Code Preview")
@@ -20,8 +20,8 @@ class CodePreviewWindow(QWidget):
         layout.addWidget(self.code_text)
         self.setLayout(layout)
 
-        # Connect to FSM controller's signal for code updates
-        self.fsm_controller.codeUpdated.connect(self.update_code)
+        # Connect to scene state controller's signal for code updates
+        self.scene_state_controller.codeUpdated.connect(self.update_code)
 
     def update_code(self, code):
         self.code_text.setText(code)

@@ -48,11 +48,11 @@ class DetailsBar(QWidget):
     selected Mobject and current state
     """
 
-    def __init__(self, scene_controller, fsm_controller, close_handler):
+    def __init__(self, scene_controller, scene_state_controller, close_handler):
         super().__init__()
 
         self.scene_controller = scene_controller
-        self.fsm_controller = fsm_controller
+        self.scene_state_controller = scene_state_controller
         self.close_handler = close_handler
 
         self.selected_imobject = INone()
@@ -69,12 +69,12 @@ class DetailsBar(QWidget):
         self.animation_run_time.valueChanged.connect(
             self.change_animation_run_time_handler
         )
-        self.animation_run_time.setValue(fsm_controller.curr.run_time)
+        self.animation_run_time.setValue(scene_state_controller.curr.run_time)
         # self.stateLabel = QLabel(f"State {fsm_controller.curr.idx}")
 
         self.loop_cb = QComboBox()
         self.loop_cb.addItem("None")
-        self.loop_cb.addItems([f"State {n}" for n in range(1, fsm_controller.end.idx)])
+        self.loop_cb.addItems([f"State {n}" for n in range(1, scene_state_controller.end.idx)])
         self.loop_cb.currentIndexChanged.connect(self.loop_cb_handler)
 
         self.loop_times = QSpinBox()
@@ -82,7 +82,7 @@ class DetailsBar(QWidget):
         self.loop_times.setSuffix(" times")
         self.loop_times.valueChanged.connect(self.change_loop_times_handler)
 
-        self.state_group_box = QGroupBox(f"State {fsm_controller.curr.idx}")
+        self.state_group_box = QGroupBox(f"State {scene_state_controller.curr.idx}")
         state_layout = QFormLayout()
         state_layout.addRow(QLabel("Run time:"), self.animation_run_time)
         state_layout.addRow(QLabel("Loop to:"), self.loop_cb)
@@ -207,7 +207,7 @@ class DetailsBar(QWidget):
         self.curr_idx = -1
 
         scene_controller.selectedMobjectChange.connect(self.refresh)
-        fsm_controller.stateChange.connect(lambda i: self.refresh())
+        scene_state_controller.stateChange.connect(lambda i: self.refresh())
         # fsm_controller.selectedMobjectChange.connect()
 
         self.setLayout(self.layout)
@@ -215,31 +215,31 @@ class DetailsBar(QWidget):
     def refresh(self, imobject=None):
         if (
             imobject == self.selected_imobject
-            and self.curr_idx == self.fsm_controller.curr.idx
+            and self.curr_idx == self.scene_state_controller.curr.idx
         ):
             return  # nothing happened
         if imobject is None:
             imobject = self.selected_imobject
-        self.curr_idx = self.fsm_controller.curr.idx
+        self.curr_idx = self.scene_state_controller.curr.idx
         self.clear_items()
         self.selected_imobject = imobject
         self.add_items(imobject)
 
     def add_items(self, imobject):
-        self.state_group_box.setTitle(f"State {self.fsm_controller.curr.idx}")
-        self.animation_run_time.setValue(self.fsm_controller.curr.run_time)
+        self.state_group_box.setTitle(f"State {self.scene_state_controller.curr.idx}")
+        self.animation_run_time.setValue(self.scene_state_controller.curr.run_time)
         self.loop_cb.addItem("None")
         self.loop_cb.addItems(
-            [f"State {n}" for n in range(1, self.fsm_controller.end.idx)]
+            [f"State {n}" for n in range(1, self.scene_state_controller.end.idx)]
         )
         self.loop_cb.setCurrentIndex(
-            self.loop_cb.findText(f"State {self.fsm_controller.curr.loop[0]}")
-            if self.fsm_controller.curr.loop is not None
+            self.loop_cb.findText(f"State {self.scene_state_controller.curr.loop[0]}")
+            if self.scene_state_controller.curr.loop is not None
             else 0
         )
         self.loop_times.setValue(
-            self.fsm_controller.curr.loop_cnt
-            if self.fsm_controller.curr.loop_cnt is not None
+            self.scene_state_controller.curr.loop_cnt
+            if self.scene_state_controller.curr.loop_cnt is not None
             else 0
         )
         self.loop_times.blockSignals(False)
@@ -311,7 +311,7 @@ class DetailsBar(QWidget):
         self.group_cb.blockSignals(False)
 
         self.scale_box.blockSignals(True)
-        self.scale_box.setValue(self.fsm_controller.get_curr_scale(imobject))
+        self.scale_box.setValue(self.scene_state_controller.get_curr_scale(imobject))
         self.scale_box.blockSignals(False)
 
         self.name_edit.setText(mh.get_name(imobject))
@@ -381,23 +381,23 @@ class DetailsBar(QWidget):
             return
 
         if self.loop_cb.currentText() == "None":
-            self.fsm_controller.curr.loop = None
+            self.scene_state_controller.curr.loop = None
         else:
             state_num = int(self.loop_cb.currentText()[6:])
             if not self.loop_times.text:
                 self.loop_times.setValue(1)
 
-            self.fsm_controller.curr.loop = (state_num, 1)
-            self.fsm_controller.curr.loop_cnt = 1
+            self.scene_state_controller.curr.loop = (state_num, 1)
+            self.scene_state_controller.curr.loop_cnt = 1
 
     def change_loop_times_handler(self, value):
-        self.fsm_controller.curr.loop_cnt = value
+        self.scene_state_controller.curr.loop_cnt = value
 
     def change_markup_text_handler(self):
         if isinstance(self.selected_imobject, INone):
             return
 
-        self.selected_imobject.edited_at = self.fsm_controller.curr.idx
+        self.selected_imobject.edited_at = self.scene_state_controller.curr.idx
         text = self.change_markup_text.toPlainText()
         error = self.selected_imobject.change_text(text)
         if error is not None:
@@ -407,12 +407,12 @@ class DetailsBar(QWidget):
             )
 
     def change_node_text_handler(self):
-        self.selected_imobject.edited_at = self.fsm_controller.curr.idx
+        self.selected_imobject.edited_at = self.scene_state_controller.curr.idx
         text = self.change_node_text.text()
         self.selected_imobject.change_label_text(text)
 
     def change_animation_run_time_handler(self, value):
-        self.fsm_controller.curr.run_time = value
+        self.scene_state_controller.curr.run_time = value
 
     def change_parent_handler(self, i):
         if self.change_parent_cb.count == 0 or not isinstance(
@@ -475,12 +475,12 @@ class DetailsBar(QWidget):
             if isinstance(imobject, INode) and imobject.parent_edge is not None:
                 affected_imobjects.append(imobject.parent_edge)
             for aff_imobj in affected_imobjects:
-                self.fsm_controller.instant_remove_obj_at_curr(aff_imobj)
+                self.scene_state_controller.instant_remove_obj_at_curr(aff_imobj)
             self.refresh()
 
     def new_group_handler(self):
         group = IGroup()
-        self.fsm_controller.instant_add_object_to_curr(group, select=False)
+        self.scene_state_controller.instant_add_object_to_curr(group, select=False)
         mh.groups.add(group)
 
         self.refresh()  # show new igroup in combobox
@@ -491,7 +491,7 @@ class DetailsBar(QWidget):
 
         imobject = self.selected_imobject
 
-        if self.fsm_controller.created_at_curr_state(imobject):
+        if self.scene_state_controller.created_at_curr_state(imobject):
             self.show_creation_error()
             return
 
@@ -506,7 +506,7 @@ class DetailsBar(QWidget):
             group = mh.get_copy(igroup)
 
             igroup.add(imobject)
-            self.fsm_controller.curr.called_mobject_functions[igroup]["add"].add(
+            self.scene_state_controller.curr.called_mobject_functions[igroup]["add"].add(
                 imobject
             )
 
@@ -530,38 +530,38 @@ class DetailsBar(QWidget):
             self.scene_controller.selected[mcopy] = color.name()
             target = mcopy.copy()
 
-            self.fsm_controller.edit_transform_target(
+            self.scene_state_controller.edit_transform_target(
                 imobject, target, color=color.name()
             )
             if not imobject.user_defined and isinstance(imobject.mobject, VGroup):
                 for child in imobject.vgroup_children:
                     child_mobject = mh.get_copy(child)
                     child_mobject.set_color(color.name())
-                    if child in self.fsm_controller.curr.targets:
-                        self.fsm_controller.curr.targets[child].set_color(color.name())
+                    if child in self.scene_state_controller.curr.targets:
+                        self.scene_state_controller.curr.targets[child].set_color(color.name())
                     # self.fsm_controller.edit_transform_target(child, child_mobject , color=color.name())
 
     def scale_box_handler(self, value):
         imobject = self.selected_imobject
         mcopy = mh.get_copy(imobject)
 
-        old_scale = self.fsm_controller.get_curr_scale(imobject)
-        new_scale = self.fsm_controller.clean_scale(value)
+        old_scale = self.scene_state_controller.get_curr_scale(imobject)
+        new_scale = self.scene_state_controller.clean_scale(value)
         mcopy.scale(new_scale / old_scale)
         target = mcopy.copy()
         if not isinstance(target, MarkupText) and not isinstance(imobject, IGroup):
             target.set_color(self.scene_controller.selected[mcopy])
 
-        if "past_scale" not in self.fsm_controller.curr.rev_attributes[imobject]:
-            self.fsm_controller.curr.rev_attributes[imobject][
+        if "past_scale" not in self.scene_state_controller.curr.rev_attributes[imobject]:
+            self.scene_state_controller.curr.rev_attributes[imobject][
                 "past_scale"
             ] = imobject.past_scale
-        self.fsm_controller.curr.changed_mobject_attributes[imobject][
+        self.scene_state_controller.curr.changed_mobject_attributes[imobject][
             "past_scale"
         ] = new_scale
         imobject.past_scale = new_scale
 
-        self.fsm_controller.edit_transform_target(
+        self.scene_state_controller.edit_transform_target(
             imobject, target, scale=new_scale
         )
 
@@ -610,11 +610,11 @@ class DetailsBar(QWidget):
             self.show_error_box("Transforms unsupported for groups for now.", None)
             return
 
-        if self.fsm_controller.created_at_curr_state(imobject):
+        if self.scene_state_controller.created_at_curr_state(imobject):
             self.show_creation_error()
             return
 
-        curr_state = self.fsm_controller.curr
+        curr_state = self.scene_state_controller.curr
         items = ["Circle", "Square", "Star", "Triangle", "Tree", "Text", "Latex"]
         item, ok = QInputDialog.getItem(
             self, "Choose Target", "Select Target MObject", items, 0, False
@@ -635,14 +635,14 @@ class DetailsBar(QWidget):
                 case "Triangle":
                     itarget = ITriangle()
                 case "Tree":
-                    itarget = INode(self.fsm_controller)
+                    itarget = INode(self.scene_state_controller)
                 case "Text":
                     itarget = IMarkupText(
-                        "click to add text", fsm_controller=self.fsm_controller
+                        "click to add text", scene_state_controller=self.scene_state_controller
                     )
                 case "Latex":
                     itarget = IMathTex(
-                        r"\xrightarrow{x^6y^8}", fsm_controller=self.fsm_controller
+                        r"\xrightarrow{x^6y^8}", scene_state_controller=self.scene_state_controller
                     )
             curr_state.capture_prev(mobject)
             itarget.added_state = curr_state

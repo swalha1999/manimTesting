@@ -72,7 +72,7 @@ def main():
 
         scene_controller = SceneController(scene, renderer)
         scenes_state_controller = SceneStateController(scene_controller)
-        scene_controller.set_fsm_controller(scenes_state_controller)
+        scene_controller.set_scene_state_controller(scenes_state_controller)
 
         objects_bar = ObjectsBar(scenes_state_controller, close_all)
         objects_bar.show()

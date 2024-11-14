@@ -68,11 +68,11 @@ class StateWidget(QWidget):
     The bottom widget which controls the the state machine.
     """
 
-    def __init__(self, scene_controller, fsm_controller, close_handler):
+    def __init__(self, scene_controller, scene_state_controller, close_handler):
         def time_change_handler(value):
             scene_controller.unselect_mobjects()
             label.setText(f"{value}/{time_slider.maximum()}")
-            fsm_controller.set_state_number(value)
+            scene_state_controller.set_state_number(value)
 
         def state_change_handler(value, length):
             time_slider.setMaximum(length)
@@ -86,18 +86,16 @@ class StateWidget(QWidget):
         self.setWindowTitle(" ")
         self.setGeometry(550, 800, 900, 100)
 
-        # button1 = QPushButton("manim it")
-        # button1.clicked.connect(lambda : self.manim_run())
         layout = QVBoxLayout()
 
         video_buttons = QHBoxLayout()
         slider_buttons = QHBoxLayout()
 
         run_btn = QPushButton("Play")
-        run_btn.clicked.connect(fsm_controller.run)
+        run_btn.clicked.connect(scene_state_controller.run)
 
         stop_btn = QPushButton("Pause")
-        stop_btn.clicked.connect(fsm_controller.stop)
+        stop_btn.clicked.connect(scene_state_controller.stop)
 
         video_buttons.addStretch()
         video_buttons.addWidget(run_btn)
@@ -105,12 +103,12 @@ class StateWidget(QWidget):
         video_buttons.addStretch()
 
         add_frame_btn = QPushButton("+")
-        add_frame_btn.clicked.connect(fsm_controller.add_state)
+        add_frame_btn.clicked.connect(scene_state_controller.add_state)
         del_frame_btn = QPushButton("-")
-        del_frame_btn.clicked.connect(fsm_controller.del_state)
+        del_frame_btn.clicked.connect(scene_state_controller.del_state)
 
         export_btn = QPushButton("Export")
-        export_btn.clicked.connect(lambda: fsm_controller.export())
+        export_btn.clicked.connect(lambda: scene_state_controller.export())
 
         time_slider = TimeSlider()
         time_slider.setOrientation(Qt.Horizontal)
@@ -123,7 +121,7 @@ class StateWidget(QWidget):
 
         label = QLabel("1/1")
 
-        fsm_controller.stateChange.connect(state_change_handler)
+        scene_state_controller.stateChange.connect(state_change_handler)
 
         for w in (time_slider, label, add_frame_btn, del_frame_btn, export_btn):
             slider_buttons.addWidget(w)

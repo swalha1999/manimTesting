@@ -10,7 +10,7 @@ class INode(IMobject):
     Intermediate mobject representing a single Tree Node
     """
 
-    def __init__(self, fsm_controller, text="t"):
+    def __init__(self, scene_state_controller, text="t"):
         self.parent = None
         self.children = []
 
@@ -26,22 +26,22 @@ class INode(IMobject):
         self.vgroup_children = [self.label, self.container]
 
         # Aux info
-        self.fsm_controller = fsm_controller
-        self.fsm_controller.curr.target_decl_str[
+        self.scene_state_controller = scene_state_controller
+        self.scene_state_controller.curr.target_decl_str[
             self.label
         ] = f"{mh.get_name(self)}.label"
-        self.fsm_controller.curr.target_decl_str[
+        self.scene_state_controller.curr.target_decl_str[
             self.container
         ] = f"{mh.get_name(self)}.container"
         for child in self.vgroup_children:
-            self.fsm_controller.curr.targets[child] = child.mobject.copy()
-            child.child_add_state = self.fsm_controller.curr
+            self.scene_state_controller.curr.targets[child] = child.mobject.copy()
+            child.child_add_state = self.scene_state_controller.curr
             child.past_point = [0, 0, 0]
 
         super().__init__(self.mobject)
 
     def spawn_child(self):
-        child = INode(self.fsm_controller)
+        child = INode(self.scene_state_controller)
         parentcpy = mh.get_copy(self)
         self.add_edge(self, child)
         self.children.append(child)
@@ -51,26 +51,26 @@ class INode(IMobject):
         new_point = [parentcpy.get_x(), parentcpy.get_y() - 2, 0]
         mh.get_copy(child).move_to(np.array(new_point))
         child.past_point = new_point
-        self.fsm_controller.curr.targets[child] = mh.get_copy(child).copy()
-        # self.fsm_controller.curr.targets[child].set_color()
-        self.fsm_controller.curr.target_decl_str[child] = child.decl_str()
-        self.fsm_controller.curr.called_target_functions[child]["move_to"] = [
+        self.scene_state_controller.curr.targets[child] = mh.get_copy(child).copy()
+        # self.scene_state_controller.curr.targets[child].set_color()
+        self.scene_state_controller.curr.target_decl_str[child] = child.decl_str()
+        self.scene_state_controller.curr.called_target_functions[child]["move_to"] = [
             str(new_point)
         ]
         for vgroup_child in child.vgroup_children:
             vgroup_child.past_point = mh.get_copy(vgroup_child).get_center().tolist()
             print("spawn", vgroup_child, vgroup_child.past_point)
-            self.fsm_controller.curr.called_target_functions[vgroup_child][
+            self.scene_state_controller.curr.called_target_functions[vgroup_child][
                 "move_to"
             ] = [str(vgroup_child.past_point)]
 
     def show_node(self):
         if self.parent_edge is not None:
-            self.fsm_controller.instant_add_object_to_curr(self.parent_edge)
-        self.fsm_controller.instant_add_object_to_curr(self)
+            self.scene_state_controller.instant_add_object_to_curr(self.parent_edge)
+        self.scene_state_controller.instant_add_object_to_curr(self)
 
     def align_children(self):
-        camera = self.fsm_controller.scene_controller.renderer.camera
+        camera = self.scene_state_controller.renderer.camera
         fw, fh = camera.frame_shape
         fsx = camera.get_center()[0] - fw / 2
 
@@ -108,23 +108,23 @@ class INode(IMobject):
             current_x = mobject.get_x()
             y = sy - dy * depth
             mobject.move_to([current_x, y, 0])
-            self.fsm_controller.edit_transform_target(
+            self.scene_state_controller.edit_transform_target(
                 child, mobject.copy(), shift=-1
             )  # track current position
             # for vgroup_child in child.vgroup_children:
-            #     # self.fsm_controller.curr.called_target_functions[vgroup_child]["move_to"] = [
+            #     # self.scene_state_controller.curr.called_target_functions[vgroup_child]["move_to"] = [
             #     #     str(vgroup_child.past_point)
             #     # ]
             #     target = mh.get_copy(vgroup_child).copy()
-            #     if vgroup_child in self.fsm_controller.scene_controller.selected:
-            #         target.set_color(self.fsm_controller.scene_controller.selected[mh.get_copy(child)])
-            #     self.fsm_controller.edit_transform_target(
+            #     if vgroup_child in self.scene_state_controller.selected:
+            #         target.set_color(self.scene_state_controller.selected[mh.get_copy(child)])
+            #     self.scene_state_controller.edit_transform_target(
             #         vgroup_child, target, move_to=[current_x, y, 0]
             # )
             child.align_children_y(dy, sy, depth + 1)
 
     def change_label_text(self, new_text_str):
-        curr_state = self.fsm_controller.curr
+        curr_state = self.scene_state_controller.curr
         self.label.is_deleted = False  # do print
         # print('text change')
         # mh.get_copy(self.label).set_color(RED)
@@ -133,7 +133,7 @@ class INode(IMobject):
         # print("curr text", self.text)
         # create new text
         new_text = Text(new_text_str)
-        color = self.fsm_controller.scene_controller.selected[mh.get_copy(self)]
+        color = self.scene_state_controller.selected[mh.get_copy(self)]
         print(mh.get_copy(self).get_color())
         new_text.match_color(mh.get_copy(self))  # selected colour
         center_point = mh.get_copy(self).get_center().tolist()
@@ -142,7 +142,7 @@ class INode(IMobject):
 
         print("LABEL CHANGE", self.label, self.label.past_point)
         # configure transforms
-        self.fsm_controller.curr.capture_prev(mh.get_copy(self.label))
+        self.scene_state_controller.curr.capture_prev(mh.get_copy(self.label))
         curr_state.targets[self.label] = new_text.copy()
         if self.label.child_add_state == curr_state:
             curr_state.target_decl_str[self.label] = f"{mh.get_name(self)}.label"
@@ -150,7 +150,7 @@ class INode(IMobject):
             curr_state.target_decl_str[self.label] = f'Text("{new_text_str}")'
 
         self.edited_at = curr_state.idx
-        if not self.fsm_controller.created_at_curr_state(self):
+        if not self.scene_state_controller.created_at_curr_state(self):
             curr_state.add_transform(self.label)
 
         if "text" not in curr_state.rev_attributes[self]:
@@ -160,7 +160,7 @@ class INode(IMobject):
         # setup current ui
 
         curr_state.play_copy(
-            ITransform(self.label), self.fsm_controller.scene_controller.scene
+            ITransform(self.label), self.scene_state_controller.scene
         )
 
         # mh.get_copy(self).add(mh.get_copy(self.label))
@@ -170,24 +170,24 @@ class INode(IMobject):
         curr_state.targets[self] = mh.get_copy(self).copy()
         curr_state.targets[self].set_color(color)
         curr_state.targets[self.label].set_color(color)
-        self.fsm_controller.curr.called_target_functions[self.label]["move_to"] = [
+        self.scene_state_controller.curr.called_target_functions[self.label]["move_to"] = [
             str(center_point)
         ]
         print("LABEL CHANGE AFTER", self.label.past_point)
 
-        if not self.fsm_controller.created_at_curr_state(
+        if not self.scene_state_controller.created_at_curr_state(
             self
         ):  # match properties with old label
-            self.fsm_controller.curr.called_target_functions[self.label][
+            self.scene_state_controller.curr.called_target_functions[self.label][
                 "match_color"
             ] = [self]
 
             ## can be placed outside if statement too
-            self.fsm_controller.curr.called_target_functions[self.label]["scale"] = {
+            self.scene_state_controller.curr.called_target_functions[self.label]["scale"] = {
                 str(self.past_scale)
             }
             if self.past_scale == 1.0:
-                del self.fsm_controller.curr.called_target_functions[self.label]["scale"]
+                del self.scene_state_controller.curr.called_target_functions[self.label]["scale"]
 
             if self not in curr_state.target_decl_str:
                 curr_state.target_decl_str[self] = f"{mh.get_name(self)}.copy()"
@@ -199,19 +199,19 @@ class INode(IMobject):
 
     def change_parent(self, new_parent):
         # TODO: needs to put the parent at a higher target
-        if "parent" not in self.fsm_controller.curr.rev_attributes[self]:
-            self.fsm_controller.curr.rev_attributes[self]["parent"] = self.parent
-        self.fsm_controller.curr.changed_mobject_attributes[self]["parent"] = new_parent
-        self.fsm_controller.curr.called_target_functions[self]["set_parent"] = [
+        if "parent" not in self.scene_state_controller.curr.rev_attributes[self]:
+            self.scene_state_controller.curr.rev_attributes[self]["parent"] = self.parent
+        self.scene_state_controller.curr.changed_mobject_attributes[self]["parent"] = new_parent
+        self.scene_state_controller.curr.called_target_functions[self]["set_parent"] = [
             new_parent
         ]
 
         if new_parent is None:
-            self.fsm_controller.instant_remove_obj_at_curr(self.parent_edge)
+            self.scene_state_controller.instant_remove_obj_at_curr(self.parent_edge)
             self.parent_edge = None
         elif self.parent is None:
             self.add_edge(new_parent, self)
-            self.fsm_controller.instant_add_object_to_curr(self.parent_edge)
+            self.scene_state_controller.instant_add_object_to_curr(self.parent_edge)
 
         self.parent = new_parent
         # parent edge should auto update through updater
