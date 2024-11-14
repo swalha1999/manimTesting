@@ -3,7 +3,6 @@ from manim import *
 from PySide6.QtCore import Signal, QObject
 
 from intermediate.imobject import IMobject, INone,IGroup
-from intermediate.itext import IMarkupText
 import controllers.mobject_helper as mh
 
 
@@ -57,9 +56,6 @@ class SceneController(QObject):
             return
 
         self.selected[mobject] = mobject.get_color().to_hex()
-
-        if not isinstance(imobject, IMarkupText) and not isinstance(imobject, IGroup):
-            mobject.set_color("#8fbc8f")
 
         self.scene_state_controller.curr.capture_prev(mobject)
 

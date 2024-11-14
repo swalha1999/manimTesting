@@ -19,24 +19,8 @@ from PySide6.QtWidgets import (
 
 from intermediate.ianimation import ICreate, IFadeIn, IReplacementTransform
 from intermediate.imobject import ICircle, IGroup, INone, ISquare, IStar, ITriangle
-from intermediate.itext import Highlight, IMarkupText, IMathTex
-from intermediate.itree import INode
 import controllers.mobject_helper as mh
 from manim import VGroup, MarkupText
-
-
-class MarkupTextEdit(QTextEdit):
-    """
-    Text _edit for MarkupText
-    """
-
-    def __init__(self, details_bar):
-        super().__init__()
-        self.details_bar = details_bar
-
-    def focusOutEvent(self, e):
-        super().focusOutEvent(e)
-        self.details_bar.change_markup_text_handler()
 
 
 TOP_WIDGETS_NUM = 1  # stretch n groupbox
@@ -164,46 +148,6 @@ class DetailsBar(QWidget):
         # self.tree_widgets = (self.change_node_text, self.changeParent_cb, self.addChildBtn, )
         self.tree_widgets = (self.tree_group_box,)
 
-        # Text widgets
-        self.change_markup_text = MarkupTextEdit(self)
-
-        self.bold_markup_text = QPushButton("b")
-        self.bold_markup_text.clicked.connect(
-            lambda: self.highlight_markup_text(Highlight.BOLD)
-        )
-
-        self.italic_markup_text = QPushButton("i")
-        self.italic_markup_text.clicked.connect(
-            lambda: self.highlight_markup_text(Highlight.ITALICS)
-        )
-
-        self.underline_markup_text = QPushButton("u")
-        self.underline_markup_text.clicked.connect(
-            lambda: self.highlight_markup_text(Highlight.UNDERLINE)
-        )
-
-        self.big_markup_text = QPushButton("big")
-        self.big_markup_text.clicked.connect(
-            lambda: self.highlight_markup_text(Highlight.BIG)
-        )
-
-        self.color_markup_text = QPushButton("color")
-        self.color_markup_text.clicked.connect(self.highlight_color_change)
-
-        self.clear_bolds = QPushButton("-")
-        self.clear_bolds.clicked.connect(self.clear_highlight)
-
-        self.text_edits = (
-            self.bold_markup_text,
-            self.italic_markup_text,
-            self.underline_markup_text,
-            self.big_markup_text,
-            self.color_markup_text,
-            self.clear_bolds,
-        )
-        self.text_widgets = (self.change_markup_text,)
-        self.text_edit_layout = QHBoxLayout()
-
         self.curr_idx = -1
 
         scene_controller.selectedMobjectChange.connect(self.refresh)
@@ -254,43 +198,7 @@ class DetailsBar(QWidget):
         for w in self.all_widgets:
             self.layout.insertWidget(self.layout.count() - 1, w)
 
-        match imobject:
-            case INode():
-                self.add_child_btn.clicked.connect(imobject.spawn_child)
-                self.align_children_btn.clicked.connect(imobject.align_children)
-                self.change_parent_cb.addItem("None")
-                self.change_parent_cb.addItems(
-                    filter(
-                        lambda name: name != mh.get_name(imobject),
-                        map(mh.get_name, mh.get_imobjects_by_class(INode)),
-                    )
-                )
-                for w in self.tree_widgets:
-                    self.layout.insertWidget(self.layout.count() - 1, w)
-
-                self.change_parent_cb.setCurrentIndex(
-                    self.change_parent_cb.findText(mh.get_name(imobject.parent))
-                    if imobject.parent is not None
-                    else 0
-                )
-                self.change_parent_cb.blockSignals(False)
-                self.change_node_text.setText(imobject.text)
-                self.change_node_text.blockSignals(False)
-            case IMarkupText() | IMathTex():
-                for w in self.text_widgets:
-                    self.layout.insertWidget(self.layout.count() - 1, w)
-
-                self.change_markup_text.setText(imobject.text)
-                self.change_markup_text.blockSignals(True)
-
-                if isinstance(imobject, IMarkupText):
-                    self.text_edit_layout = QGridLayout()
-                    for i, w in enumerate(self.text_edits):
-                        self.text_edit_layout.addWidget(w, i // 3, i % 3)
-                    self.layout.insertLayout(
-                        self.layout.count() - 1, self.text_edit_layout
-                    )
-
+        
         self.mobj_group_box.setTitle(f"Selected: {mh.get_name(imobject)}")
         # print("REFRESHED INTRO", imobject.intro_anim.__class__.__name__ if imobject.intro_anim is not None else 'None')
         self.intro_cb.blockSignals(True)
@@ -322,7 +230,6 @@ class DetailsBar(QWidget):
     def clear_items(self):
         self.change_node_text.blockSignals(True)
         self.name_edit.blockSignals(True)
-        self.change_markup_text.blockSignals(True)
         self.loop_cb.blockSignals(True)
         self.loop_times.blockSignals(True)
         self.group_cb.blockSignals(True)
@@ -334,47 +241,9 @@ class DetailsBar(QWidget):
             if child is not None:
                 child.setParent(None)
 
-        # clear sublayout
-        for i in reversed(range(self.text_edit_layout.count())):
-            child = self.text_edit_layout.itemAt(i).widget().setParent(None)
-
-        if isinstance(self.selected_imobject, INode):
-            self.add_child_btn.clicked.disconnect(self.selected_imobject.spawn_child)
-            self.align_children_btn.clicked.disconnect(
-                self.selected_imobject.align_children
-            )
-            self.change_parent_cb.blockSignals(True)
-            self.change_parent_cb.clear()
-
+        
         self.loop_cb.clear()
         self.group_cb.clear()
-
-    def highlight_color_change(self):
-        if isinstance(self.selected_imobject, INone):
-            return
-        color = QColorDialog.getColor()
-
-        if color.isValid():
-            self.selected_imobject.bold_color = color.name()
-            cursor = self.change_markup_text.textCursor()
-            self.selected_imobject.handle_bold(
-                cursor.selectionStart(), cursor.selectionEnd(), Highlight.COLOR_CHANGE
-            )
-
-    def highlight_markup_text(self, highlight):
-        if isinstance(self.selected_imobject, INone):
-            return
-
-        cursor = self.change_markup_text.textCursor()
-        self.selected_imobject.handle_bold(
-            cursor.selectionStart(), cursor.selectionEnd(), highlight
-        )
-
-    def clear_highlight(self):
-        if isinstance(self.selected_imobject, INone):
-            return
-
-        self.selected_imobject.clear_bold()
 
     def loop_cb_handler(self, i):
         if self.change_parent_cb.count == 0 or not self.loop_cb.currentText():
@@ -393,19 +262,6 @@ class DetailsBar(QWidget):
     def change_loop_times_handler(self, value):
         self.scene_state_controller.curr.loop_cnt = value
 
-    def change_markup_text_handler(self):
-        if isinstance(self.selected_imobject, INone):
-            return
-
-        self.selected_imobject.edited_at = self.scene_state_controller.curr.idx
-        text = self.change_markup_text.toPlainText()
-        error = self.selected_imobject.change_text(text)
-        if error is not None:
-            self.show_error_box(
-                error[0],
-                error[1],
-            )
-
     def change_node_text_handler(self):
         self.selected_imobject.edited_at = self.scene_state_controller.curr.idx
         text = self.change_node_text.text()
@@ -415,11 +271,6 @@ class DetailsBar(QWidget):
         self.scene_state_controller.curr.run_time = value
 
     def change_parent_handler(self, i):
-        if self.change_parent_cb.count == 0 or not isinstance(
-            self.selected_imobject, INode
-        ):
-            return
-
         # print("CHANGE PARENT")
         imobj_name = self.change_parent_cb.currentText()
         imobj = mh.get_imobject_by_name(imobj_name) if imobj_name is not None else None
@@ -434,9 +285,7 @@ class DetailsBar(QWidget):
 
         imobject = self.selected_imobject
         affected_imobjects = [imobject]
-        if isinstance(imobject, INode) and imobject.parent_edge is not None:
-            affected_imobjects.append(imobject.parent_edge)
-
+        
         for aff_imobj in affected_imobjects:
             if aff_imobj.intro_anim is not None:
                 aff_imobj.added_state.animations.remove(aff_imobj.intro_anim)
@@ -472,8 +321,6 @@ class DetailsBar(QWidget):
         ret = msg.exec_()
         if ret == QMessageBox.Ok:
             affected_imobjects = [imobject]
-            if isinstance(imobject, INode) and imobject.parent_edge is not None:
-                affected_imobjects.append(imobject.parent_edge)
             for aff_imobj in affected_imobjects:
                 self.scene_state_controller.instant_remove_obj_at_curr(aff_imobj)
             self.refresh()
@@ -634,16 +481,6 @@ class DetailsBar(QWidget):
                     itarget = IStar()
                 case "Triangle":
                     itarget = ITriangle()
-                case "Tree":
-                    itarget = INode(self.scene_state_controller)
-                case "Text":
-                    itarget = IMarkupText(
-                        "click to add text", scene_state_controller=self.scene_state_controller
-                    )
-                case "Latex":
-                    itarget = IMathTex(
-                        r"\xrightarrow{x^6y^8}", scene_state_controller=self.scene_state_controller
-                    )
             curr_state.capture_prev(mobject)
             itarget.added_state = curr_state
 
@@ -654,37 +491,14 @@ class DetailsBar(QWidget):
 
             curr_state.add_replacement_transform(imobject, itarget)
 
-            # if imobject.group is not None:
-            #     # TODO: account for this case when can access each child in group
-            #     mh.get_copy(imobject.group).remove(mobject)
-            #     self.scene_controller.scene.add(mobject)
-
-            # igroup = IGroup()
-            # mh.set_name(igroup, f"{mh.get_name(imobject)}_grp")
-            # mh.groups.add(igroup)
-
-            # igroup.add(itarget)
-            # self.fsm_controller.instant_add_object_to_curr(igroup, transform=True)
-
-            # curr_state.targets[imobject] = mh.get_copy(igroup)
-            # curr_state.called_target_functions[igroup]["add"].add(imobject)
-
-            # store for writer
             print("1")
             curr_state.targets[itarget] = target.move_to(center_point)
             curr_state.target_decl_str[itarget] = itarget.decl_str()
 
-            # if isinstance(itarget, INode):
-            #     mh.get_copy(itarget.label).set_color('#6c57c9')
-            # setup current ui
-            # print('before', hex(id(itarget.label)), hex(id(mh.get_copy(itarget.label))))
             curr_state.play_copy(
                 IReplacementTransform(imobject, itarget), self.scene_controller.scene
             )
-            # print('after', hex(id(itarget.label)), hex(id(mh.get_copy(itarget.label))))
-            # if isinstance(itarget, INode):
-            #     mh.get_copy(itarget.label).set_color('#6c57c9')
-
+            
             
             curr_state.called_target_functions[itarget]["move_to"] = {
                 str(center_point.tolist())

@@ -3,7 +3,6 @@ import numpy as np
 from manim import *
 from file.writer import Writer
 from states.state import State
-from intermediate.itree import INode
 import controllers.mobject_helper as mh
 
 from intermediate.imobject import IGroup
@@ -235,12 +234,6 @@ class SceneStateController(QObject):
         return self.created_at_curr_state(imobject) and imobject.intro_anim is not None
 
     def instant_add_object_to_curr(self, imobject, select=True, transform=False):
-        if isinstance(imobject, INode):
-            if imobject.parent_edge is not None:
-                self.instant_add_object_to_curr(imobject.parent_edge)
-            for child in imobject.vgroup_children:
-                self.curr.targets[child] = mh.get_copy(child).copy()
-                child.child_add_state = self.curr
 
         if select:  # if select needs changing
             self.scene_controller.unselect_mobjects()

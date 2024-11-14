@@ -15,9 +15,6 @@ import importlib.util
 import sys
 import inspect
 from intermediate.imobject import ICircle, IMobject, ISquare, IStar, ITriangle
-from intermediate.itext import IMarkupText, IMathTex
-from intermediate.itree import INode
-from manim import Mobject
 
 class ObjectsBar(QTabWidget):
     """
@@ -182,10 +179,7 @@ class ObjectsBar(QTabWidget):
         tab.setLayout(self.objects_layout)
         return tab
 
-    def add_tree(self):
-        node = INode(self.scene_state_controller)
-        node.show_node()
-
+    
     def closeEvent(self, e):
         self.close_handler()
         e.accept()

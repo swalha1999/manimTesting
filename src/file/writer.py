@@ -1,6 +1,5 @@
 from intermediate.ianimation import IApplyFunction, IReplacementTransform, ITransform
 from intermediate.imobject import IDependent, IMobject
-from intermediate.itree import INode
 import controllers.mobject_helper as mh
 from pathlib import Path
 from manim import VGroup
@@ -129,8 +128,6 @@ class ParentEdge(Line):
             if imobject.is_deleted:
                 continue
 
-            if isinstance(imobject, INode):
-                self.write_tree = True
             if imobject.added_state == curr:
                 continue  # will be written in targets
 
@@ -206,9 +203,7 @@ class ParentEdge(Line):
             f.write("\n")
 
     def print_target_init(self, f, curr, imobject):
-        if isinstance(imobject, INode):
-            self.write_tree = True
-
+        
         tobj_str = (
             mh.get_name(imobject)
             if imobject.added_state == curr or imobject.child_add_state == curr
@@ -451,9 +446,7 @@ class ParentEdge(Line):
         return code
 
     def generate_target_init(self, curr, imobject):
-        if isinstance(imobject, INode):
-            self.write_tree = True
-
+        
         tobj_str = (
             mh.get_name(imobject)
             if imobject.added_state == curr or imobject.child_add_state == curr
