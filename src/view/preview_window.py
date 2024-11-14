@@ -17,7 +17,6 @@ class PreviewWindow(PyQt5Window):
         self._widget.setGeometry(550, 250, 900, 520)
         self.title = "Render Preview Window"
 
-        # self.size = size
         self.renderer = renderer
 
         mglw.activate_context(window=self)
@@ -27,7 +26,6 @@ class PreviewWindow(PyQt5Window):
 
         self.swap_buffers()
 
-    # Delegate event handling to scene.
     def mouse_move_event(self, event):
         super().mouse_move_event(event)
         x, y = event.x(), event.y()

@@ -90,7 +90,6 @@ class ObjectsBar(QTabWidget):
         spec.loader.exec_module(module)
         
 
-        # classes = inspect.getmembers(sys.modules[module_name], inspect.isclass)
         classes = {}
         for name, obj in inspect.getmembers(sys.modules[module_name]):
             if inspect.isclass(obj) and obj.__module__ == module.__name__:
@@ -185,7 +184,7 @@ class ObjectsBar(QTabWidget):
 
     def add_tree(self):
         node = INode(self.scene_state_controller)
-        node.show_node()  # can also use instant_add
+        node.show_node()
 
     def closeEvent(self, e):
         self.close_handler()

@@ -57,14 +57,12 @@ class SceneController(QObject):
             return
 
         self.selected[mobject] = mobject.get_color().to_hex()
-        # print("SELECT", self.selected)
 
         if not isinstance(imobject, IMarkupText) and not isinstance(imobject, IGroup):
             mobject.set_color("#8fbc8f")
 
         self.scene_state_controller.curr.capture_prev(mobject)
 
-        # print(imobject)
         self.selectedMobjectChange.emit(imobject)
 
     def unselect_mobjects(self):
@@ -97,8 +95,5 @@ class SceneController(QObject):
     def move_selected_by(self, delta):
         if not self.selected:
             return
-        # target = new_point.get_bounding_box_point(ORIGIN)
-        # old = old_point.get_bounding_box_point(ORIGIN)
         for mobject in self.selected:
-            # mobject.shift((target - old) * np.array([1, 1, 1]))
             mobject.shift(delta)

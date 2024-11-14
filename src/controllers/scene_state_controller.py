@@ -17,14 +17,12 @@ class SceneStateController(QObject):
     stateChange = Signal(int, int)
     codeUpdated = Signal(str)
     CLAMP_DISTANCE = 1
-    # selectedMobjectChange = Signal(IMobject)
     def __init__(self, scene_controller):
         super().__init__()
 
         self.num_states = 1
         self.scene_controller = scene_controller
 
-        # Set up the stack of the scene states  
         self.head = State(0)
         self.end = State(2)
         state = State(1)
@@ -38,7 +36,7 @@ class SceneStateController(QObject):
         self.curr = state  # animations to play
 
         self.writer = Writer(self.head, "io/export_scene.py")
-        self.update_code()  # Initial code update
+        self.update_code()  
 
     def play_forward(self, fast=True):
         self.curr = self.curr.next
@@ -55,7 +53,6 @@ class SceneStateController(QObject):
 
     def run(self):
         self.scene_controller.unselect_mobjects()
-        # print("curr", hex(id(self.curr.next)), "end", hex(id(self.end)))
         if self.curr.next == self.end:
             self.set_state_number(1, False)  # go back to start
 
@@ -108,7 +105,6 @@ class SceneStateController(QObject):
         if self.is_running:
             return
 
-        # route new state within the state machine
         new_state = State(self.curr.idx + 1)
         temp = self.curr.next
 
@@ -200,7 +196,6 @@ class SceneStateController(QObject):
                 imobjs += imobject.vgroup_children
 
             center = mh.get_copy(imobject).get_center().tolist()
-            # if isinstance(shift, int) and shift==-1:
             for imobj in imobjs:
                 if "past_point" not in self.curr.rev_attributes[imobj]:
                     self.curr.rev_attributes[imobj]["past_point"] = imobj.past_point

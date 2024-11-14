@@ -49,8 +49,6 @@ def generate_new_copy(imobject, default=None, child_state=None):
             for child in imobject.vgroup_children
         ]
         vgroup = VGroup(*vgroup_children)
-        # if imobject.color_changed:
-        #     print("COLOR CHANGED VGROUP")
         print("linking children")
         vgroup.set_color(imobject.mobject.get_color())
         if default is not None:
@@ -60,8 +58,6 @@ def generate_new_copy(imobject, default=None, child_state=None):
     if default is None:
         print("NO TARGET COPY")
     mcopy = imobject.mobject.copy() if default is None else default
-    # if default is None:
-    #     mcopy.move_to([0, 0, 0])  # move to center
     return mcopy
 
 

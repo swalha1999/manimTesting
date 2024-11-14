@@ -29,8 +29,7 @@ pyQt5_windows = set()
 
 
 def main():
-    # read_tokens = Reader("scene/manim_scene.py")
-
+    
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     app = QApplication(sys.argv)
     pyqt5_app = QApplicationPyQt5(sys.argv)
@@ -83,7 +82,6 @@ def main():
         details_bar = DetailsBar(scene_controller, scenes_state_controller, close_all)
         # details_bar.show()
 
-        # Add the new CodePreviewWindow
         code_preview = CodePreviewWindow(scenes_state_controller, close_all)
         code_preview.show()
 

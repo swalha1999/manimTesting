@@ -26,7 +26,6 @@ class TimeSlider(QSlider):
 
         p = QPainter(self)
 
-        # custom ticks to make discreteness obvious
         interval = self.tickInterval()
         if interval == 0:
             interval = self.pageStep()
