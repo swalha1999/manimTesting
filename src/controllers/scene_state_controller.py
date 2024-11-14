@@ -2,14 +2,14 @@ from PySide6.QtCore import Signal, QObject
 import numpy as np
 from manim import *
 from file.writer import Writer
-from fsm.state import State
+from states.state import State
 from intermediate.itree import INode
 import controllers.mobject_helper as mh
 
 from intermediate.imobject import IGroup
 
 
-class FsmController(QObject):
+class SceneStateController(QObject):
     """
     A controller for the finite state machine controller of the animation.
     """

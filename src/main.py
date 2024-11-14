@@ -5,7 +5,6 @@ from manim import *
 from manim.opengl import *
 from manim.renderer.opengl_renderer import OpenGLRenderer
 
-from PySide6.QtGui import QSurfaceFormat
 from PySide6.QtWidgets import (
     QApplication,
 )
@@ -16,7 +15,7 @@ from PyQt5.QtWidgets import QApplication as QApplicationPyQt5, QMainWindow, QPus
 
 from pathlib import Path
 from os import path
-from controllers.fsm_controller import FsmController
+from controllers.scene_state_controller import SceneStateController
 from controllers.scene_controller import SceneController
 import scene.manim_scene as manim_scene
 from view.details_bar import DetailsBar
@@ -72,20 +71,20 @@ def main():
         renderer.scene = scene
 
         scene_controller = SceneController(scene, renderer)
-        fsm_controller = FsmController(scene_controller)
-        scene_controller.set_fsm_controller(fsm_controller)
+        scenes_state_controller = SceneStateController(scene_controller)
+        scene_controller.set_fsm_controller(scenes_state_controller)
 
-        objects_bar = ObjectsBar(fsm_controller, close_all)
+        objects_bar = ObjectsBar(scenes_state_controller, close_all)
         objects_bar.show()
 
-        state_bar = StateWidget(scene_controller, fsm_controller, close_all)
+        state_bar = StateWidget(scene_controller, scenes_state_controller, close_all)
         state_bar.show()
 
-        details_bar = DetailsBar(scene_controller, fsm_controller, close_all)
+        details_bar = DetailsBar(scene_controller, scenes_state_controller, close_all)
         # details_bar.show()
 
         # Add the new CodePreviewWindow
-        code_preview = CodePreviewWindow(fsm_controller, close_all)
+        code_preview = CodePreviewWindow(scenes_state_controller, close_all)
         code_preview.show()
 
         print(path.join(this_dir, "view", "styles.qss"))

@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 from intermediate.ianimation import IApplyFunction, IReplacementTransform, ITransform
-import fsm.animation_generator as ag
+import states.animation_generator as ag
 import controllers.mobject_helper as mh
 from manim import VGroup
 
