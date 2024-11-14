@@ -5,7 +5,6 @@ from PySide6.QtWidgets import (
     QWidget,
     QLineEdit,
     QComboBox,
-    QTextEdit,
     QHBoxLayout,
     QGroupBox,
     QFormLayout,
@@ -14,17 +13,15 @@ from PySide6.QtWidgets import (
     QColorDialog,
     QMessageBox,
     QInputDialog,
-    QGridLayout,
 )
 
 from intermediate.ianimation import ICreate, IFadeIn, IReplacementTransform
 from intermediate.imobject import ICircle, IGroup, INone, ISquare, IStar, ITriangle
 import controllers.mobject_helper as mh
-from manim import VGroup, MarkupText
+from manim import VGroup
 
 
 TOP_WIDGETS_NUM = 1  # stretch n groupbox
-
 
 class DetailsBar(QWidget):
     """
@@ -54,8 +51,7 @@ class DetailsBar(QWidget):
             self.change_animation_run_time_handler
         )
         self.animation_run_time.setValue(scene_state_controller.curr.run_time)
-        # self.stateLabel = QLabel(f"State {fsm_controller.curr.idx}")
-
+        
         self.loop_cb = QComboBox()
         self.loop_cb.addItem("None")
         self.loop_cb.addItems([f"State {n}" for n in range(1, scene_state_controller.end.idx)])
@@ -78,10 +74,6 @@ class DetailsBar(QWidget):
         self.empty_label = QLabel("nothing selected")
         self.layout.addWidget(self.empty_label)
         self.layout.addStretch()
-
-        self.name_edit = QLineEdit()
-        self.name_edit.setText(mh.get_name(self.selected_imobject))
-        self.name_edit.editingFinished.connect(self.name_edit_handler)
 
         self.intro_cb = QComboBox()
         self.intro_cb.addItems(["None", "Create", "FadeIn"])
@@ -115,7 +107,6 @@ class DetailsBar(QWidget):
             f"Selected: {mh.get_name(self.selected_imobject)}"
         )
         mobj_layout = QFormLayout()
-        mobj_layout.addRow(QLabel("Name:"), self.name_edit)
         mobj_layout.addRow(QLabel("Appear animation:"), self.intro_cb)
         mobj_layout.addRow(QLabel("Colour:"), self.change_color_btn)
         mobj_layout.addRow(QLabel("Scale:"), self.scale_box)
@@ -126,7 +117,6 @@ class DetailsBar(QWidget):
 
         self.all_widgets = (self.mobj_group_box,)
 
-        # Tree widgets
         self.change_parent_cb = QComboBox()
         self.change_parent_cb.addItem("None")
         self.change_parent_cb.currentIndexChanged.connect(self.change_parent_handler)
@@ -136,24 +126,12 @@ class DetailsBar(QWidget):
 
         self.add_child_btn = QPushButton("add child")
         self.align_children_btn = QPushButton("align children")
-
-        self.tree_group_box = QGroupBox("Tree attributes")
-        tree_layout = QFormLayout()
-        tree_layout.addRow(QLabel("Node text:"), self.change_node_text)
-        tree_layout.addRow(QLabel("Parent:"), self.change_parent_cb)
-        tree_layout.addRow(QLabel("Add child:"), self.add_child_btn)
-        tree_layout.addRow(QLabel("Align children:"), self.align_children_btn)
-        self.tree_group_box.setLayout(tree_layout)
-
-        # self.tree_widgets = (self.change_node_text, self.changeParent_cb, self.addChildBtn, )
-        self.tree_widgets = (self.tree_group_box,)
-
+        
         self.curr_idx = -1
 
         scene_controller.selectedMobjectChange.connect(self.refresh)
         scene_state_controller.stateChange.connect(lambda i: self.refresh())
-        # fsm_controller.selectedMobjectChange.connect()
-
+        
         self.setLayout(self.layout)
 
     def refresh(self, imobject=None):
@@ -222,14 +200,8 @@ class DetailsBar(QWidget):
         self.scale_box.setValue(self.scene_state_controller.get_curr_scale(imobject))
         self.scale_box.blockSignals(False)
 
-        self.name_edit.setText(mh.get_name(imobject))
-        self.name_edit.blockSignals(False)
-
-        # self.layout.addStretch()
-
     def clear_items(self):
         self.change_node_text.blockSignals(True)
-        self.name_edit.blockSignals(True)
         self.loop_cb.blockSignals(True)
         self.loop_times.blockSignals(True)
         self.group_cb.blockSignals(True)
@@ -280,8 +252,6 @@ class DetailsBar(QWidget):
     def intro_anim_handler(self, i):
         if isinstance(self.selected_imobject, INone):
             return
-
-        # print('CHANGE INTRO', self.selected_imobject.__class__.__name__, i)
 
         imobject = self.selected_imobject
         affected_imobjects = [imobject]
@@ -357,11 +327,6 @@ class DetailsBar(QWidget):
                 imobject
             )
 
-            # igroup.added_state = self.fsm_controller.curr
-            # igroup.intro_anim = None
-            # self.fsm_controller.curr.added.append(igroup)
-
-            # self.scene_controller.unselect_mobjects()
         else:
             pass  # TODO: tabs for each child
 
@@ -396,9 +361,7 @@ class DetailsBar(QWidget):
         new_scale = self.scene_state_controller.clean_scale(value)
         mcopy.scale(new_scale / old_scale)
         target = mcopy.copy()
-        if not isinstance(target, MarkupText) and not isinstance(imobject, IGroup):
-            target.set_color(self.scene_controller.selected[mcopy])
-
+    
         if "past_scale" not in self.scene_state_controller.curr.rev_attributes[imobject]:
             self.scene_state_controller.curr.rev_attributes[imobject][
                 "past_scale"
@@ -462,7 +425,7 @@ class DetailsBar(QWidget):
             return
 
         curr_state = self.scene_state_controller.curr
-        items = ["Circle", "Square", "Star", "Triangle", "Tree", "Text", "Latex"]
+        items = ["Circle", "Square", "Star", "Triangle"]
         item, ok = QInputDialog.getItem(
             self, "Choose Target", "Select Target MObject", items, 0, False
         )
@@ -470,7 +433,7 @@ class DetailsBar(QWidget):
             print("TRANSFORM GET COPY")
             mobject = mh.get_copy(imobject)
             center_point = mobject.get_center().copy()
-            # itemLabel.setText(item)
+
             itarget = None
             match item:
                 case "Circle":
@@ -484,7 +447,6 @@ class DetailsBar(QWidget):
             curr_state.capture_prev(mobject)
             itarget.added_state = curr_state
 
-            # self.fsm_controller.instant_add_object_to_curr(itarget, transform=True)
             imobject.edited_at = curr_state.idx
 
             target = itarget.mobject

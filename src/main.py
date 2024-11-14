@@ -10,10 +10,8 @@ from PySide6.QtWidgets import (
 )
 
 from PyQt5.QtGui import QSurfaceFormat as QSurfaceFormatPyQt5
-from PyQt5.QtWidgets import QApplication as QApplicationPyQt5, QMainWindow, QPushButton, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QApplication as QApplicationPyQt5
 
-
-from pathlib import Path
 from os import path
 from controllers.scene_state_controller import SceneStateController
 from controllers.scene_controller import SceneController
@@ -80,7 +78,7 @@ def main():
         state_bar.show()
 
         details_bar = DetailsBar(scene_controller, scenes_state_controller, close_all)
-        # details_bar.show()
+        details_bar.show()
 
         code_preview = CodePreviewWindow(scenes_state_controller, close_all)
         code_preview.show()
