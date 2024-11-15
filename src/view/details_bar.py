@@ -471,3 +471,4 @@ class DetailsBar(QWidget):
     def closeEvent(self, e):
         self.close_handler()
         e.accept()
+
