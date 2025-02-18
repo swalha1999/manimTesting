@@ -21,7 +21,7 @@ A graphical user interface for testing and previewing Manim animations. This pro
 
 1. After you clone the repository:
 ```bash
-cd manimTesting-1
+cd manimTesting
 ```
 
 2. Install the required dependencies:
