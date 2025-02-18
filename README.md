@@ -13,7 +13,7 @@ A graphical user interface for testing and previewing Manim animations. This pro
 
 ## Prerequisites
 
-- Python 3.x
+- Python 3.10
 - OpenGL support
 - Qt libraries
 
